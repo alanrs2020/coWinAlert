@@ -17,28 +17,27 @@ snapshot = ref.get()
 dataSnapshot = reff.get()
 
 
-def notify(message):
+def notify(message, userId):
     for key, val in snapshot.items():
         print('userId: {0} token: {1}'.format(key, val))
-        print(val)
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': 'key=' + serverToken,
-        }
+        if key == userId:
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'key=' + serverToken,
+            }
 
-        body = {
-            'notification': {'title': 'Vaccine Alert !!!',
-                             'body': message
-                             },
-            'to':
-                val,
-            'priority': 'high',
-            #   'data': dataPayLoad,
-        }
-        response = requests.post("https://fcm.googleapis.com/fcm/send", headers=headers, data=json.dumps(body))
-        print(response.status_code)
-
-        print(response.json())
+            body = {
+                'notification': {'title': 'Vaccine Alert !!!',
+                                 'body': message
+                                 },
+                'to':
+                    val,
+                'priority': 'high',
+                #   'data': dataPayLoad,
+            }
+            response = requests.post("https://fcm.googleapis.com/fcm/send", headers=headers, data=json.dumps(body))
+            print(response.status_code)
+            print(response.json())
 
 
 def checkIsAvailable(centers, center_name, user_id):
@@ -49,12 +48,12 @@ def checkIsAvailable(centers, center_name, user_id):
                 print("New slot Available")
                 print(center['sessions'][0]['date'])
                 reff.child(user_id).child(center_name).update({'isAlerted': True})
-                notify("New slot Available for " + center_name + " " + center['sessions'][0]['date'])
+                notify("New slot Available for " + center_name + " " + center['sessions'][0]['date'], user_id)
                 # print(dataSnapshot)
             else:
                 print("No slot Available")
                 print(center['sessions'][0]['date'])
-                # notify("No slot Available for " + center_name + " " + center['sessions'][0]['date'])
+                # notify("No slot Available for " + center_name + " " + center['sessions'][0]['date'],user_id)
                 # print(json.loads(reff.child(center_name).child(user_id)))
         else:
             # print("Center not found")
