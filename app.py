@@ -48,15 +48,17 @@ def checkIsAvailable(centers, center_name, user_id):
             if center['sessions'][0]['available_capacity'] > 0:
                 print("New slot Available")
                 print(center['sessions'][0]['date'])
-
+                reff.child(user_id).child(center_name).update({'isAlerted': True})
                 notify("New slot Available for " + center_name + " " + center['sessions'][0]['date'])
-                print(dataSnapshot)
+                # print(dataSnapshot)
             else:
                 print("No slot Available")
                 print(center['sessions'][0]['date'])
-                reff.child(user_id).child(center_name).update({'isAlerted': True})
-                #notify("No slot Available for " + center_name + " " + center['sessions'][0]['date'])
-                print(json.loads(dataSnapshot[user_id][center_name])['isAlerted'])
+                # notify("No slot Available for " + center_name + " " + center['sessions'][0]['date'])
+                # print(json.loads(reff.child(center_name).child(user_id)))
+        else:
+            # print("Center not found")
+            print(" ")
 
 
 def getAlerts():
@@ -64,21 +66,26 @@ def getAlerts():
         for key1, val1 in dataSnapshot.items():
             print("Key {0} Value {1}".format(key1, val1))
             for dataKey, data in val1.items():
-                json_user = json.loads(data)
-                print(json_user['center_name'])
+
+                json_user = data
+                centerName =json_user['center_name']
+                userId = json_user['user_id']
+                print(json_user)
+                print(centerName)
                 print(json_user['district_url'])
                 print(json_user['isAlerted'])
-                print(json_user['user_id'])
+                print(userId)
 
                 if json_user['isAlerted'] is False:
                     response_json = requests.get(json_user['district_url']).json()
-                    # print(response_json['centers'])
-                    checkIsAvailable(response_json['centers'], json_user['center_name'], json_user['user_id'])
+
+                    print(response_json['centers'])
+                    checkIsAvailable(response_json['centers'], centerName, userId)
                 else:
                     print("Alerted")
-
+    else:
+        print("No active alerts")
 
 while True:
-    # Code executed here
     getAlerts()
     time.sleep(60)
