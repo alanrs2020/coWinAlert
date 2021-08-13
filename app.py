@@ -1,4 +1,5 @@
 import time
+from datetime import date
 import firebase_admin
 import requests
 import json
@@ -40,11 +41,13 @@ def notify(message, userId):
             print(response.json())
 
 
-def checkIsAvailable(centers, center_name, user_id):
+def checkIsAvailable(centers, center_name, user_id, _date):
     for center in centers:
         if center['name'] == center_name:
             print("Available")
-            if center['sessions'][0]['available_capacity'] > 0:
+            # today = date.today()
+            # d1 = today.strftime("%d/%m/%Y")
+            if center['sessions'][0]['available_capacity'] > 0 or center['sessions'][0]['date'] > _date:
                 print("New slot Available")
                 print(center['sessions'][0]['date'])
                 reff.child(user_id).child(center_name).update({'isAlerted': True})
@@ -69,6 +72,7 @@ def getAlerts():
                 json_user = data
                 centerName =json_user['center_name']
                 userId = json_user['user_id']
+                _date = json_user['date_created']
                 print(json_user)
                 print(centerName)
                 print(json_user['district_url'])
@@ -78,8 +82,8 @@ def getAlerts():
                 if json_user['isAlerted'] is False:
                     response_json = requests.get(json_user['district_url']).json()
 
-                    print(response_json['centers'])
-                    checkIsAvailable(response_json['centers'], centerName, userId)
+                    # print(response_json['centers'])
+                    checkIsAvailable(response_json['centers'], centerName, userId,_date)
                 else:
                     print("Alerted")
     else:
