@@ -14,11 +14,11 @@ serverToken = 'AAAAhqrLgjQ:APA91bECbIZ17cBTmBt8pm0tQcrQbAmbpOpJ6bEUW1-LIpHAay9wZ
 
 '''deviceToken = 'device token here'''
 
-snapshot = ref.get()
-dataSnapshot = reff.get()
+
 
 
 def notify(message, userId):
+    snapshot = ref.get()
     for key, val in snapshot.items():
         print('userId: {0} token: {1}'.format(key, val))
         if key == userId:
@@ -50,7 +50,10 @@ def checkIsAvailable(centers, center_name, user_id, _date):
             if center['sessions'][0]['available_capacity'] > 0 or center['sessions'][0]['date'] > _date:
                 print("New slot Available")
                 print(center['sessions'][0]['date'])
-                reff.child(user_id).child(center_name).update({'isAlerted': True})
+                reff.child(user_id).child(center_name).update(
+                    {'isAlerted': True,
+                     'slotsAvailable': center['sessions'][0]['available_capacity']
+                     })
                 notify("New slot Available for " + center_name + " " + center['sessions'][0]['date'], user_id)
                 # print(dataSnapshot)
             else:
@@ -64,13 +67,14 @@ def checkIsAvailable(centers, center_name, user_id, _date):
 
 
 def getAlerts():
+    dataSnapshot = reff.get()
     if dataSnapshot is not None:
         for key1, val1 in dataSnapshot.items():
             print("Key {0} Value {1}".format(key1, val1))
             for dataKey, data in val1.items():
 
                 json_user = data
-                centerName =json_user['center_name']
+                centerName = json_user['center_name']
                 userId = json_user['user_id']
                 _date = json_user['date_created']
                 print(json_user)
@@ -83,11 +87,12 @@ def getAlerts():
                     response_json = requests.get(json_user['district_url']).json()
 
                     # print(response_json['centers'])
-                    checkIsAvailable(response_json['centers'], centerName, userId,_date)
+                    checkIsAvailable(response_json['centers'], centerName, userId, _date)
                 else:
                     print("Alerted")
     else:
         print("No active alerts")
+
 
 while True:
     getAlerts()
