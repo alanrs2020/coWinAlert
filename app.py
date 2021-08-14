@@ -68,9 +68,11 @@ def checkIsAvailable(centers, center_name, user_id, _date):
 
 def getAlerts():
     dataSnapshot = reff.get()
+    count = 0
     if dataSnapshot is not None:
         for key1, val1 in dataSnapshot.items():
-            print("Key {0} Value {1}".format(key1, val1))
+            count = count+1
+            print("Key {0} Value {1} Count {2}".format(key1, val1,count))
             for dataKey, data in val1.items():
 
                 json_user = data
@@ -90,6 +92,9 @@ def getAlerts():
                     checkIsAvailable(response_json['centers'], centerName, userId, _date)
                 else:
                     print("Alerted")
+            if count > 98:
+                break
+
     else:
         print("No active alerts")
 
